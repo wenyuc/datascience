@@ -163,7 +163,7 @@ for filename in glob.glob(path):
 
 # split the data into training data and test data
 import random
-from mymath.machine_learning import split_data
+from datascience.machine_learning import split_data
 
 random.seed(0)
 train_messages, test_messages = split_data(data, 0.75)

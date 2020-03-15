@@ -6,7 +6,7 @@ def bucketize(point: float, bucket_size: float) -> float:
     """Floor the point to the next lower multiple of bucket_size"""
     return bucket_size * math.floor(point / bucket_size)
 
-from mymath.linear_algebra import Vector
+from datascience.linear_algebra import Vector
 import matplotlib.pyplot as plt
 
 def make_histogram(points: Vector, bucket_size: float) -> Dict[float, int]:
@@ -20,7 +20,7 @@ def plot_histogram(points: Vector, bucket_size: float, title: str = "") -> None:
     #plt.show()
     
 import random
-from mymath.probability import inverse_normal_cdf
+from datascience.probability import inverse_normal_cdf
 
 random.seed(0)
 
@@ -54,11 +54,11 @@ plt.title("Very Different Joint Distrbution")
 #plt.show()
 
 # to check the correlation of ys1, ys2 with xs
-from mymath.statistics import correlation
+from datascience.statistics import correlation
 print(correlation(xs, ys1))
 print(correlation(xs, ys2))
 
-from mymath.linear_algebra import Matrix, make_matrix
+from datascience.linear_algebra import Matrix, make_matrix
 
 def correlation_matrix(data: List[Vector]) -> Matrix: 
     """Returns the len(data) * len(data) matrix whose (i,j)-th
@@ -298,8 +298,8 @@ avg_daily_change = {
 assert avg_daily_change[10] == max(avg_daily_change.values())
 
 from typing import Tuple
-from mymath.linear_algebra import vector_mean
-from mymath.statistics import standard_deviation
+from datascience.linear_algebra import vector_mean
+from datascience.statistics import standard_deviation
 
 def scale(data: List[Vector]) -> Tuple[Vector, Vector]:
     """returns each mean and sd for each item"""
@@ -350,7 +350,7 @@ def primes_up_to(n: int) -> List[int]:
 
 my_primes = primes_up_to(1000)
 
-from mymath.linear_algebra import subtract,magnitude,dot
+from datascience.linear_algebra import subtract,magnitude,dot
 
 def de_mean(data: List[Vector]) -> List[Vector]:
     """ Returns the data to have mean 0 in every dimension"""

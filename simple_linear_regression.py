@@ -8,15 +8,15 @@ def error(alpha: float, beta: float, x_i: float, y_i: float) -> float:
     """
     return predict(alpha, beta, x_i) - y_i
 
-from mymath.linear_algebra import Vector
+from datascience.linear_algebra import Vector
 
 def sum_of_sqerrors(alpha: float, beta: float, x: Vector, y: Vector) -> float:
     return sum(error(alpha, beta, x_i, y_i) ** 2
                for x_i, y_i in zip(x, y))
 
 from typing import Tuple
-from mymath.linear_algebra import Vector
-from mymath.statistics import correlation, standard_deviation, mean
+from datascience.linear_algebra import Vector
+from datascience.statistics import correlation, standard_deviation, mean
 
 def least_squares_fit(x: Vector, y: Vector) -> Tuple[float, float]:
     """
@@ -33,13 +33,13 @@ y = [3 * i - 5 for i in x]
 # Should find that y = 3x - 5
 assert least_squares_fit(x, y) == (-5, 3)
 
-from mymath.statistics import num_friends_good, daily_minutes_good
+from datascience.statistics import num_friends_good, daily_minutes_good
 
 alpha, beta = least_squares_fit(num_friends_good, daily_minutes_good)
 assert 22.9 < alpha < 23.0
 assert 0.9 < beta < 0.905
 
-from mymath.statistics import de_mean
+from datascience.statistics import de_mean
 
 def total_sum_of_squares(y: Vector) -> float:
     """the total squared variation of y_i's from their mean"""
@@ -59,7 +59,7 @@ assert 0.328 < rsq < 0.330
 def main():
     import random
     import tqdm
-    from mymath.gradient_descent import gradient_step
+    from datascience.gradient_descent import gradient_step
     
     num_epochs = 10000
     random.seed(0)

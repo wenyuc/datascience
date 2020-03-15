@@ -7,7 +7,7 @@ def normal_approximation_to_binomial(n: int, p: float) -> Tuple[float, float]:
     sigma = math.sqrt(n * p * (1-p))
     return mu, sigma
 
-from mymath.probability import normal_cdf
+from datascience.probability import normal_cdf
 
 # Whenever a random variable follows a normal distribution, we use
 # normal_cdf to figure out the probability that its realized value
@@ -38,7 +38,7 @@ def normal_probability_outside(lo: float,
     return 1 - normal_probability_between(lo, hi, mu, sigma)
 
 
-from mymath.probability import inverse_normal_cdf
+from datascience.probability import inverse_normal_cdf
 
 def normal_upper_bound(probability: float,
                        mu: float = 0,

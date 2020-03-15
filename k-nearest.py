@@ -32,7 +32,7 @@ assert majority_vote(['en', 'de','jp', 'de', 'jp','en', 'de','jp']) == 'de'
 
 # to create a classifier
 from typing import NamedTuple
-from mymath.linear_algebra import Vector, distance
+from datascience.linear_algebra import Vector, distance
 
 class LabeledPoint(NamedTuple):
     point: Vector
@@ -100,7 +100,7 @@ def main():
     plt.gca().clear()
 
     import random
-    from mymath.machine_learning import split_data
+    from datascience.machine_learning import split_data
 
     random.seed(12)
     iris_train, iris_test = split_data(iris_data, 0.70)
@@ -126,7 +126,7 @@ def main():
 
     print(pct_correct, confusion_matrix)
 
-    from mymath.liner_algebra import Vector, distance
+    from datascience.liner_algebra import Vector, distance
     
     # to generate random points
     def random_point(dim: int) -> Vector:

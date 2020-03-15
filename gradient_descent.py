@@ -1,4 +1,4 @@
-from mymath.linear_algebra import Vector, dot
+from datascience.linear_algebra import Vector, dot
 
 def sum_of_squares(v: Vector) -> float:
     """ Computes the sum of squared elements in v"""
@@ -52,7 +52,7 @@ def estimate_gradient(f: Callable[[float], float],
 
 # using ghe gradient
 import random
-from mymath.linear_algebra import distance, add, scalar_multiply
+from datascience.linear_algebra import distance, add, scalar_multiply
 
 def gradient_step(v: Vector, gradient: Vector, step_size: float) -> Vector:
     """ Moves 'step_size' in the 'gradient' direction from v"""
@@ -88,7 +88,7 @@ def linear_gradient(x: float, y: float, theta: Vector) -> Vector:
     grad = [2 * error * x, 2 * error]      # using its gradient
     return grad
 
-from mymath.linear_algebra import vector_mean
+from 1.linear_algebra import vector_mean
 
 # start with random values for slope and intercept
 theta = [random.uniform(-1, 1), random.uniform(-1,1)]
