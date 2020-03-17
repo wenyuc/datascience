@@ -1,3 +1,5 @@
+# skikit-learn has a linear_model module that provides LinearRegression
+# model similar to here.
 from datascience.linear_algebra import dot, Vector
 from typing import List
 
@@ -82,11 +84,11 @@ assert 0.67 < multiple_r_squared(inputs, daily_minutes_good, beta) < 0.68
 from typing import TypeVar, Callable
 
 X = TypeVar('X')         # Generic type for data
-Y = TypeVar('Stat')      # Generic type for 'statistics'
+Stat = TypeVar('Stat')      # Generic type for 'statistics'
 
 def bootstrap_sample(data: List[X]) -> List[X]:
     """randomly samples len(data) elements with replacement"""
-    return [random.choice(data) for _ in data)
+    return [random.choice(data) for _ in data]
 
 def bootstrap_statistics(data: List[X],
                          stats_fn: Callable[[List[X]], Stat],
@@ -99,7 +101,7 @@ close_to_100 = [99.5 + random.random() for _ in range(101)]
 
 #101 points, 50 of them near 0, 50 of them near 200
 far_from_100 = ([99.5 + random.random()] +
-                [random.random() for _in range(50)] +
+                [random.random() for _ in range(50)] +
 		[200 + random.random() for _ in range(50)])
 
 from datascience.statistics import median, standard_deviation
@@ -112,11 +114,11 @@ assert standard_deviation(medians_close) < 1
 assert standard_deviation(medians_far) > 90
 
 from typing import Tuple
-improt datetime
+import datetime
 
 def estimate_sample_beta(pairs: List[Tuple[Vector, float]]):
     x_sample = [x for x, _ in pairs]
-    y_sample = [y for _,y in paris]
+    y_sample = [y for _,y in pairs]
     beta = least_squares_fit(x_sample, y_sample, learning_rate, 5000, 25)
     print("bootstrap sample", beta)
     return beta
@@ -138,7 +140,7 @@ from datascience.probability import normal_cdf
 
 def p_value(beta_hat_j: float, sigma_hat_j: float) -> float:
     if beta_hat_j > 0:
-        return 2 * (1 - normal_cdf(beta_hat_j / sigma_hat_j)# seeing a larger value
+        return 2 * (1 - normal_cdf(beta_hat_j / sigma_hat_j)) # seeing a larger value
     else:
         return 2 * normal_cdf(beta_hat_j / sigma_hat_j)
 
@@ -160,6 +162,7 @@ def squared_error_ridge(x: Vector, y: float, beta: Vector, alpha: float) -> floa
     """estiamte error plus ridge penalty on beta"""
     return error(x,y,beta) ** 2 + ridge_penalty(beta, alpha)
 
+# plug into gradient descent
 from datascience.linear_algebra import add
 
 def ridge_penalty_gradient(beta: Vector, alpha: float) -> Vector:
@@ -171,40 +174,27 @@ def sqerror_ridge_gradient(x: Vector, y: flaot, beta: Vector, alpha: float) -> V
         including the ridge penalty """
     return add(sqerror_gradient(x, y, beta), ridge_penalty_gradient(beta, alpha))
 
+random.seed(0)
+beta_0 = least_squares_fit_ridge(inputs, daily_minutes_good, 0.0,  #alpha 
+                                 learning_rate, 5000, 25)
 
+assert 5 < dot(beta_0[1:], beta_0[1:]) < 6
+assert 0.67 < multiple_r_squared(inputs, daily_minutes_good, beta_0) < 0.69
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+beta_0_1 = least_squares_fit_ridge(inputs, daily_minutes_good, 0.1,  # alpha
+                                       learning_rate, 5000, 25)
+# [30.8, 0.95, -1.83, 0.54]
+assert 4 < dot(beta_0_1[1:], beta_0_1[1:]) < 5
+assert 0.67 < multiple_r_squared(inputs, daily_minutes_good, beta_0_1) < 0.69
+    
+beta_1 = least_squares_fit_ridge(inputs, daily_minutes_good, 1,  # alpha
+                                     learning_rate, 5000, 25)
+# [30.6, 0.90, -1.68, 0.10]
+assert 3 < dot(beta_1[1:], beta_1[1:]) < 4
+assert 0.67 < multiple_r_squared(inputs, daily_minutes_good, beta_1) < 0.69
+    
+beta_10 = least_squares_fit_ridge(inputs, daily_minutes_good,10,  # alpha
+                                      learning_rate, 5000, 25)
+# [28.3, 0.67, -0.90, -0.01]
+assert 1 < dot(beta_10[1:], beta_10[1:]) < 2
+assert 0.5 < multiple_r_squared(inputs, daily_minutes_good, beta_10) < 0.6

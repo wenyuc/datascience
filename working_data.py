@@ -371,9 +371,9 @@ def directional_variance_gradient(data: List[Vector], w: Vector) -> Vector:
     """The gradient of directional variance with respect to w"""
     w_dir = direction(w)
     return [sum(2 * dot(v, w_dir) * v[i] for v in data)
-            for in in range(len(w))]
+            for i in range(len(w))]
 
-from scratch.gradient_descent import gradient_step
+from datascience.gradient_descent import gradient_step
 
 def first_principal_component(data: List[Vector],
                               n: int = 100,
@@ -390,14 +390,14 @@ def first_principal_component(data: List[Vector],
 
     return direction(guess)
 
-from scratch.linear_algebra import scalar_multiply
+from datascience.linear_algebra import scalar_multiply
 
 def project(v: Vector, w: Vector) -> Vector:
     """return the projection of v onto the direction w"""
     projection_length = dot(v, w)
     return scalar_multiply(projection_length, w)
 
-from scratch.linear_algebra import subtract
+from datascience.linear_algebra import subtract
 
 def remove_projection_from_vector(v: Vector, w: Vector) -> Vector:
     """projects v onto w and subtracts the result from v"""

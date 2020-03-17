@@ -88,7 +88,7 @@ def linear_gradient(x: float, y: float, theta: Vector) -> Vector:
     grad = [2 * error * x, 2 * error]      # using its gradient
     return grad
 
-from 1.linear_algebra import vector_mean
+from datascience.linear_algebra import vector_mean
 
 # start with random values for slope and intercept
 theta = [random.uniform(-1, 1), random.uniform(-1,1)]
