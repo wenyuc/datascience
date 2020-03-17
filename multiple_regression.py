@@ -33,7 +33,7 @@ import tqdm
 from datascience.linear_algebra import vector_mean
 from datascience.gradient_descent import gradient_step
 
-def least_squares_fix(xs: List[Vector],
+def least_squares_fit(xs: List[Vector],
                       ys: List[Vector],
                       learning_rate: float = 0.001,
                       num_steps: int = 1000,
@@ -58,10 +58,153 @@ def least_squares_fix(xs: List[Vector],
 
 from datascience.simple_linear_regression import total_sum_of_squares
 from datascience.statistics import daily_minutes_good
+from datascience.gradient_descent import gradient_step
+
+random.seed(0)
+
+# I used trial and error to choose num_iters and step_size.
+learning_rate = 0.001
+beta = least_squares_fit(inputs, daily_minutes_good, learning_rate, 5000, 25)
+assert 30.50 < beta[0] < 30.70 # constant
+assert 0.96 < beta[1] < 1.00   # num friends
+assert -1.89 < beta[2] < -1.85 # work hours per day
+assert 0.91 < beta[3] <0.94    # has Ph.D
 
 def multiple_r_squared(xs: List[Vector], ys: Vector, beta: List[Vector]) -> float:
     sum_of_squared_errors = sum(error(x, y, beta) ** 2
                                 for x, y in zip(xs, ys))
     return 1.0 - sum_of_squared_errors / total_sum_of_squares(ys)
 
+
 assert 0.67 < multiple_r_squared(inputs, daily_minutes_good, beta) < 0.68
+
+# bootstrapa a new datasets by choosing n data points with replacement from our data
+from typing import TypeVar, Callable
+
+X = TypeVar('X')         # Generic type for data
+Y = TypeVar('Stat')      # Generic type for 'statistics'
+
+def bootstrap_sample(data: List[X]) -> List[X]:
+    """randomly samples len(data) elements with replacement"""
+    return [random.choice(data) for _ in data)
+
+def bootstrap_statistics(data: List[X],
+                         stats_fn: Callable[[List[X]], Stat],
+                         num_samples: int) -> List[Stat]:
+    """evaluates stats_fn on num_samples bootstrap samples from data"""
+    return [stats_fn(bootstrap_sample(data)) for _ in range(num_samples)]
+
+# 101 points all very close to 100
+close_to_100 = [99.5 + random.random() for _ in range(101)]
+
+#101 points, 50 of them near 0, 50 of them near 200
+far_from_100 = ([99.5 + random.random()] +
+                [random.random() for _in range(50)] +
+		[200 + random.random() for _ in range(50)])
+
+from datascience.statistics import median, standard_deviation
+
+medians_close = bootstrap_statistics(close_to_100, median, 100)
+
+medians_far = bootstrap_statistics(far_from_100, median, 100)
+
+assert standard_deviation(medians_close) < 1
+assert standard_deviation(medians_far) > 90
+
+from typing import Tuple
+improt datetime
+
+def estimate_sample_beta(pairs: List[Tuple[Vector, float]]):
+    x_sample = [x for x, _ in pairs]
+    y_sample = [y for _,y in paris]
+    beta = least_squares_fit(x_sample, y_sample, learning_rate, 5000, 25)
+    print("bootstrap sample", beta)
+    return beta
+
+random.seed(0)    # so that you get the same results as me
+
+# this will take a couple of minutes!
+bootstrap_betas = bootstrap_statistics(list(zip(inputs, daily_minutes_good)), 
+                                       estimate_sample_beta, 100)
+
+# estimate the standard deviation of each coefficient
+bootstrap_standard_errors = [
+                    standard_deviation([beta[i] for beta in bootstrap_betas]) 
+		    for i in range(4)]
+
+print(bootstrap_standard_errors)
+
+from datascience.probability import normal_cdf
+
+def p_value(beta_hat_j: float, sigma_hat_j: float) -> float:
+    if beta_hat_j > 0:
+        return 2 * (1 - normal_cdf(beta_hat_j / sigma_hat_j)# seeing a larger value
+    else:
+        return 2 * normal_cdf(beta_hat_j / sigma_hat_j)
+
+assert p_value(30.58, 1.27 ) < 0.001  # constant_term
+assert p_value(0.972, 0.103) < 0.001  # num_friends
+assert p_value(-1.865, 0.155) < 0.001 # work_hours
+assert p_value(0.923, 1.249) > 0.4 # ph.d
+
+# ridge penalty 
+# alpha is a "hyperparameter" controlling how harsh the penalty is.
+# sometimes it's called lambda but that already means something
+# a penalty proportional to the sum of the squares of the beta_i
+# don't penalize beta_0, the constant term.
+def ridge_penalty(beta: Vector, alpha: Vector) -> float:
+    return alpha * dot(beta[1:], beta[1:])
+
+
+def squared_error_ridge(x: Vector, y: float, beta: Vector, alpha: float) -> float:
+    """estiamte error plus ridge penalty on beta"""
+    return error(x,y,beta) ** 2 + ridge_penalty(beta, alpha)
+
+from datascience.linear_algebra import add
+
+def ridge_penalty_gradient(beta: Vector, alpha: float) -> Vector:
+    """gradient of just the ridge penalty"""
+    return [0.] + [2 * alpha * beta_j for beta_j in beta[1:]]
+
+def sqerror_ridge_gradient(x: Vector, y: flaot, beta: Vector, alpha: float) -> Vector:
+    """ the gradient corresponding to the ith squared error term
+        including the ridge penalty """
+    return add(sqerror_gradient(x, y, beta), ridge_penalty_gradient(beta, alpha))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
