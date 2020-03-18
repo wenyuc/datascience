@@ -1,3 +1,4 @@
+# Numpy has many linear algebra machinery
 from typing import List
 
 Vector = List[float]
