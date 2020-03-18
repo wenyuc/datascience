@@ -42,6 +42,15 @@ def vector_sum(vectors: List[Vector]) -> Vector:
     return [sum(vector[i] for vector in vectors) 
             for i in range(num_elements)]
 
+    # This sounds a little bit trick. In fact, it's like following clip
+    # for i in range(num_elements):
+    #    for v in vectors:
+    #        print(v[i])
+    # Output:
+    # 1 3 5 7
+    # 2 4 6 8
+    # refer misc/test_sum.py
+    
 assert vector_sum([[1,2], [3,4], [5,6], [7,8]]) == [16,20]
 
 # multiply a vector by a scalar
@@ -182,4 +191,7 @@ assert friend_matrix[0][8] == 0, "0 and 8 are not friends"
 friends_of_five = [i
                    for i, is_friend in enumerate(friend_matrix[5])
                    if is_friend]
-print(friends_of_five)
+# enumerate() returns index and its value
+# refer misc/test_enum.py
+
+assert friends_of_five == [4,6,7]
