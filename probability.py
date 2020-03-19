@@ -1,39 +1,10 @@
-#1 conditional probability
-import enum, random
-
-# Enum is a typed set of enumerated values.
-class Kid(enum.Enum):
-    BOY = 0
-    GIRL = 1
-
-def random_kid() -> Kid:
-    return random.choice([Kid.BOY, Kid.GIRL])
-
-both_girls = 0
-older_girl = 0
-either_girl = 0
-
-for _ in range(10000):
-    older = random_kid()
-    younger = random_kid()
-
-    if older == Kid.GIRL:
-        older_girl += 1
-    if older == Kid.GIRL and younger == Kid.GIRL:
-        both_girls += 1
-    if older == Kid.GIRL or younger == Kid.GIRL:
-        either_girl += 1
-
-print("P(both | older):", both_girls / older_girl)
-print("P(both | either):", both_girls / either_girl)
-
-#2 uniform pdf
+# uniform pdf
 # Probability Density Function(PDF) that the probability of seeing a value
 # in a certain interval equals the integral of the density function over the interval
 def uniform_pdf(x:float) -> float:
     return 1 if 0 <= x < 1 else 0
 
-#3 normal cdf
+# normal cdf
 # Cumulative distribution function(CDF) that gives the probability that a random
 # variable is less than or equals to a certain value
 def uniform_cdf(x: float) -> float:
@@ -59,8 +30,10 @@ plt.plot(xs, [normal_pdf(x, mu=-1) for x in xs], '-.', label='mu=-1, sigma=1')
 plt.legend()
 plt.title("Vairous Normal pdfs")
 #plt.show()
-#plt.savefig("im/Various_Normal_Pdfs.png")
+plt.savefig("im/Various_Normal_Pdfs.png")
+plt.close()
 
+# x mapping to p
 def normal_cdf(x:float, mu: float = 0, sigma: float=1) -> float:
     return(1 + math.erf((x-mu) / math.sqrt(2) /sigma)) /2
 
@@ -72,8 +45,10 @@ plt.plot(xs, [normal_cdf(x, mu=-1) for x in xs], '-.', label='mu=-1, sigma=1')
 plt.legend(loc = 4)    #bottom right
 plt.title("Vairous Normal cdfs")
 #plt.show()
-#plt.savefig("im/Various_Normal_Cdfs.png")
+plt.savefig("im/Various_Normal_Cdfs.png")
+plt.close()
 
+# p mapping to x
 def inverse_normal_cdf(p:float,
                        mu: float = 0,
 		       sigma: float = 1,
@@ -82,6 +57,9 @@ def inverse_normal_cdf(p:float,
 
     # if not standard, compute standard and rescale
     if mu != 0 or sigma !=1:
+        # if Z is a standard normal distribution(u = 0, sigma = 1),
+        # X = sigma * Z + u is also normal with mean u and standard
+        # variance = sigma
         return mu + sigma * inverse_normal_cdf(p, tolerance=tolerance)
 
     low_z = -10.0     #normal_cdf(-10) is (very close to) 0
@@ -122,10 +100,10 @@ def binomial_histogram(p: float, n: int, num_points: int) -> None:
     """Picks points from a Binomial(n,p) and plots their histogram"""
 
     data = [binomial(n,p) for _ in range(num_points)]
-    print(data)
+    #print(data)
 
     histogram= Counter(data)
-    print(histogram)
+    #print(histogram)
 
     plt.bar([x - 0.4 for x in histogram.keys()],
             [v / num_points for v in histogram.values()],
@@ -141,8 +119,38 @@ def binomial_histogram(p: float, n: int, num_points: int) -> None:
     plt.title("Binomial Distribution vs. Normal Approximation")
     #plt.show()
     plt.savefig("im/Binomial_Normal_Approximation.png")
-
-
+    plt.close()
+    
 binomial_histogram(0.75,100,10000)
 
- 
+def main():
+    # conditional probability
+    import enum, random
+
+    # Enum is a typed set of enumerated values.
+    class Kid(enum.Enum):
+        BOY = 0
+        GIRL = 1
+
+    def random_kid() -> Kid:
+        return random.choice([Kid.BOY, Kid.GIRL])
+
+    both_girls = 0
+    older_girl = 0
+    either_girl = 0
+
+    for _ in range(10000):
+        older = random_kid()
+        younger = random_kid()
+
+        if older == Kid.GIRL:
+            older_girl += 1
+        if older == Kid.GIRL and younger == Kid.GIRL:
+            both_girls += 1
+        if older == Kid.GIRL or younger == Kid.GIRL:
+            either_girl += 1
+
+    print("P(both | older):", both_girls / older_girl)
+    print("P(both | either):", both_girls / either_girl)
+    
+if __name__ == "__main__": main()
