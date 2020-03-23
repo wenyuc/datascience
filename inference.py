@@ -68,8 +68,8 @@ def normal_two_sided_bounds(probability: float,
     return lower_bound, upper_bound
 
 mu_0, sigma_0 = normal_approximation_to_binomial(1000, 0.5)
-print(" p=0,5, mu_0, sigma_0")
-print(mu_0, sigma_0)
+assert mu_0 == 500
+assert 15.7 < sigma_0 < 15.9
 
 # type 1 error ("false positive"), in which we reject H0 even though
 # it's true. In other words, if H0 is true, approximately 19 times
@@ -77,27 +77,30 @@ print(mu_0, sigma_0)
 # (469, 531)
 low_bound, upper_bound = normal_two_sided_bounds(0.95, mu_0, sigma_0)
 print("5% low_bound, upper_bound:",low_bound, upper_bound)
+assert 468.9 < low_bound < 469.1
+assert 530.5 < upper_bound < 531.5
 
-low_bound, upper_bound = normal_two_sided_bounds(0.01, mu_0, sigma_0)
-print("1% low_bound, upper_bound:",low_bound, upper_bound)
+#low_bound, upper_bound = normal_two_sided_bounds(0.01, mu_0, sigma_0)
+#print("1% low_bound, upper_bound:",low_bound, upper_bound)
+#assert 499.8 < low_bound < 500
+#assert 500 < upper_bound < 500.2
 
 # actual mu and sigma based on p=0.55
 mu_1, sigma_1 = normal_approximation_to_binomial(1000, 0.55)
-print(" p=0.55, mu_1, sigma_1")
-print(mu_1, sigma_1)
+print(" p=0.55, mu_1, sigma_1", mu_1, sigma_1)
 
-# a type 2 error ("false negative") means we fail to reject the null hypothesis,
-# which will happen when X is still in our original interval
+# a type 2 error ("false negative") means we fail to reject H0,
+# which will happen when X is still in our original interval.
 type_2_probability = normal_probability_between(low_bound, upper_bound, mu_1, sigma_1)
 power = 1 - type_2_probability
-print(power)
+print("power = ",power)
 
 upper_bound = normal_upper_bound(0.95, mu_0, sigma_0)
-print(upper_bound)
+print("upper_bound:", upper_bound)
 
 type_2_probability = normal_probability_below(upper_bound, mu_1, sigma_1)
 power = 1 - type_2_probability
-print(power)
+print("power=", power)
 
 # p-values
 def two_sided_p_value(x: float, mu: float = 0, sigma: float = 1) -> float:
@@ -111,7 +114,7 @@ def two_sided_p_value(x: float, mu: float = 0, sigma: float = 1) -> float:
         return 2 * normal_probability_below(x, mu, sigma)
 
 result = two_sided_p_value(529.5, mu_0, sigma_0)    #529.5 rather than 530
-print("to see 530 heads, p=", result)
+print("to see 530 heads, p=", result)  #0.062
 
 # one way to convince yourself this is sensible estimate is with a simulation
 import random
@@ -124,6 +127,7 @@ for _ in range(1000):
         extreme_value_count +=1
 
 print("extreme value (>=530 or <=470):", extreme_value_count)
+assert 59 < extreme_value_count < 65, f"{extreme_value_count}"
 
 result = two_sided_p_value(531.5, mu_0, sigma_0)
 two_sided_p_value(529.5, mu_0, sigma_0)

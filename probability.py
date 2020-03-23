@@ -35,6 +35,7 @@ plt.close()
 
 # x mapping to p
 def normal_cdf(x:float, mu: float = 0, sigma: float=1) -> float:
+    """ Returns the probability at point x, i.e., P{X = x}"""
     return(1 + math.erf((x-mu) / math.sqrt(2) /sigma)) /2
 
 xs = [x/10.0 for x in range(-50,50)]
