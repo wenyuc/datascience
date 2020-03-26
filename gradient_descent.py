@@ -32,8 +32,8 @@ plt.title("Actual Derivatives vs. Estimates")
 plt.plot(xs, actuals, 'rx', label = 'Actual')
 plt.plot(xs, estimates, 'b+', label = 'Estimate')
 plt.legend(loc=9)
-plt.show()
-#plt.savefig("im/Actual_Derivatives_Estimates")
+#plt.show()
+plt.savefig("im/Actual_Derivatives_Estimates")
 
 def partial_difference_quotient(f: Callable[[float], float],
                                 v: Vector,
@@ -50,7 +50,7 @@ def estimate_gradient(f: Callable[[float], float],
     return [partial_difference_quotient(f,v,i,h)
             for i in range(len(v))]
 
-# using ghe gradient
+# using the gradient
 import random
 from datascience.linear_algebra import distance, add, scalar_multiply
 
@@ -69,7 +69,8 @@ print(v)
 
 for epoch in range(1000):
     grad = sum_of_squares_gradient(v)    # computes the gradient at v
-    v = gradient_step(v, grad, -0.01)   # take a negative gradient step
+    print("grad:", grad)
+    v = gradient_step(v, grad, -0.01)    # take a negative gradient step
     print(epoch, v)
 
 print("distance:", distance(v, [0,0,0]))
@@ -92,6 +93,8 @@ from datascience.linear_algebra import vector_mean
 
 # start with random values for slope and intercept
 theta = [random.uniform(-1, 1), random.uniform(-1,1)]
+print("starting theta:", theta)
+print("inputs:",inputs)
 
 learning_rate = 0.001
 
@@ -105,6 +108,7 @@ for epoch in range(5000):
 slope, intercept = theta
 assert  19.9 < slope < 20.1, "slope should be about 20"
 assert  4.9 < intercept < 5.1, "intercept should be 5"
+
 
 # minibatch gradient descent
 from typing import TypeVar, List, Iterator
@@ -124,7 +128,7 @@ def minibatches(dataset: List[T],
     for start in batch_starts:
         end = start + batch_size
         yield dataset[start: end]
-        
+            
 # solve our problem again using minibatches:
 theta = [random.uniform(-1, 1), random.uniform(-1,1)]
 
@@ -132,13 +136,13 @@ for epoch in range(1000):
     for batch in minibatches(inputs, batch_size=20):
         grad = vector_mean([linear_gradient(x, y, theta) for x, y in batch])
         theta = gradient_step(theta, grad, -learning_rate)
-    print(epoch, theta)
+        print(epoch, theta)
 
 slope, intercept = theta
 assert  19.9 < slope < 20.1, "slope should be about 20"
 assert  4.9 < intercept < 5.1, "intercept should be 5"
 
-# stochastic gradient descent, in which you take gradient steps based on training
+# stochastic gradient descent, in which to take gradient steps based on training
 # example at a time.
 
 theta = [random.uniform(-1, 1), random.uniform(-1,1)]
@@ -146,7 +150,7 @@ for epoch in range(100):
     for x, y in inputs:
         grad = linear_gradient(x, y, theta)
         theta = gradient_step(theta, grad, -learning_rate)
-    print(epoch, theta)
+        print(epoch, theta)
 
 slope, intercept = theta
 assert  19.9 < slope < 20.1, "slope should be about 20"
