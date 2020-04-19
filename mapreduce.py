@@ -77,6 +77,24 @@ assert max_reducer("key", [1,2,3,4]) == ("key", 4)
 assert distinct_reducer("key", [1,2,1,3,2,4,3,1,5]) == ("key", {1,2,3,4,5})
 assert count_distinct_reducer("key", [1,2,1,3,2,4,3,1,5]) == ("key", 5)
 
+import datetime
+
+status_updates = [
+    {"id": 2,
+     "username" : "joelgrus",
+     "text" : "Should I write a second edition of my data science book?",
+     "created_at" : datetime.datetime(2018, 2, 21, 11, 47, 0),
+     "liked_by" : ["data_guy", "data_gal", "mike"] },
+    {"id": 3,
+     "username" : "wenyuc",
+     "text" : "continue study data science and big data.",
+     "created_at" : datetime.datetime(2020, 4, 19, 11, 47, 0),
+     "liked_by" : ["reducemap", "python", "mysql", "neural network", "reducemap"] },
+     # ...
+]
+
+from typing import NamedTuple
+
 # a general map_reduce function
 def map_reduce(inputs: Iterable,
                 mapper: Mapper,
@@ -94,6 +112,87 @@ def map_reduce(inputs: Iterable,
             for key, values in collector.items()
             for output in reducer(key, values)]
 
+# 1. count how many data science updates there are on each day of the week
+def data_science_day_mapper(status_update: dict) -> Iterable:
+    """Yields (day_of_week, 1) if status_update contains "data science" """
+
+    if "data science" in status_update["text"].lower():
+        day_of_week = status_update["created_at"].weekday()
+        yield (day_of_week, 1)
+
+
+# 2. to find out for each user the most common word that she puts in her status update.
+def words_per_user_mapper(status_update: dict) -> Iterable:
+    """ Yields(username, (word,1) """
+    user = status_update["username"]
+
+    for word in tokenize(status_update["text"]):
+        word = word.rstrip('?').rstrip('.')
+        yield (user, (word, 1))
+
+def most_popular_word_reducer(user: str, words_and_counts: Iterable[KV]):
+    """ Given a sequence of (word, count) pairs,returns the word with the highest total count. """
+    word_counts = Counter()
+    for word, count in words_and_counts:
+        word_counts[word] += count
+          
+    word, count = word_counts.most_common(1)[0]    
+    yield (user, (word, count))
+
+# 3. liker mapper
+def liker_mapper(status_update: dict):
+    user = status_update["username"]
+    for liker in status_update["liked_by"]:
+        yield (user, liker)
+
+# 4. Matrix manipulation
+from typing import NamedTuple
+
+class Entry(NamedTuple):
+    name: str
+    i: int
+    j: int
+    value: float
+
+def matrix_multiply_mapper(num_rows_a: int, num_cols_b: int) -> Mapper:
+    """ C[x][y] = A[x][0] * B[0][y] + A[x][1] * B[1][y] + ... A[x][m] * B[m][y]
+        So, an element A[i][j] goes into every C[i][y] with coef B[j][y]
+        and an element B[i][j] goes into every C[x][j] with coef A[x][i]"""
+    
+    def mapper(entry: Entry):
+        if entry.name == "A":
+            for y in range(num_cols_b):
+                key = (entry.i, y)          # which element of C
+                value = (entry.j, entry.value)  # which entry in the sum
+                yield (key, value)
+        else:
+            for x in range(num_rows_a):
+                key = (x, entry.j)          # which element of C
+                value = (entry.i, entry.value)  # which entry in the sum
+                yield (key, value)
+    return mapper
+
+def matrix_multiply_reducer(key: Tuple[int, int],indexed_values: Iterable[Tuple[int, int]]):
+    results_by_index = defaultdict(list)
+    
+    for index, value in indexed_values:
+        results_by_index[index].append(value)
+    
+    # multiply the values for positions with two values
+    # (one from A, and one from B) and sum them up
+    
+    sumproduct = sum(values[0] * values[1] for values in results_by_index.values() if len(values) == 2)
+    
+    if sumproduct != 0.0:
+        yield (key, sumproduct)
+        
+A = [[3, 2, 0],
+    [0, 0, 0]]
+   
+B = [[4, -1, 0], 
+    [10, 0, 0],
+    [0, 0, 0]]
+
 def main():
     documents = ["data science", "big data", "science fiction"]
     
@@ -110,121 +209,18 @@ def main():
     #word_max = map_reduce(documents, wc_mapper, sum_reducer)
     #print(word_max)
 
-    import datetime
-
-    status_updates = [
-        {"id": 2,
-         "username" : "joelgrus",
-         "text" : "Should I write a second edition of my data science book?",
-         "created_at" : datetime.datetime(2018, 2, 21, 11, 47, 0),
-         "liked_by" : ["data_guy", "data_gal", "mike"] },
-        {"id": 3,
-         "username" : "wenyuc",
-         "text" : "continue study data science and big data.",
-         "created_at" : datetime.datetime(2020, 4, 19, 11, 47, 0),
-         "liked_by" : ["reducemap", "python", "mysql", "neural network", "reducemap"] },
-         # ...
-    ]
-
-    # 1. count how many data science updates there are on each day of the week
-    def data_science_day_mapper(status_update: dict) -> Iterable:
-        """Yields (day_of_week, 1) if status_update contains "data science" """
-
-        if "data science" in status_update["text"].lower():
-            day_of_week = status_update["created_at"].weekday()
-            yield (day_of_week, 1)
-
-    data_science_days = map_reduce(status_updates, 
-                                    data_science_day_mapper, 
-                                    sum_reducer)
-    print(data_science_days)
-
-    # 2. to find out for each user the most common word that she puts in her status update.
-    def words_per_user_mapper(status_update: dict) -> Iterable:
-        """ Yields(username, (word,1) """
-        user = status_update["username"]
-
-        for word in tokenize(status_update["text"]):
-            word = word.rstrip('?').rstrip('.')
-            yield(user, (word, 1))
     
-    def most_popular_word_reducer(user: str, words_and_counts: Iterable[KV]):
-        """ Given a sequence of (word, count) pairs,
-            returns the word with the highest total count. """
-        word_counts = Counter()
-        for word, count in words_and_counts:
-            word_counts[word] += count
-          
-        word, count = word_counts.most_common(1)[0]
-        
-        yield (user, (word, count))
+    data_science_days = map_reduce(status_updates,data_science_day_mapper, sum_reducer)
+    print(data_science_days)
         
     user_words = map_reduce(status_updates, words_per_user_mapper, most_popular_word_reducer)
-    
     print(user_words)
-    
-    # 3. liker mapper
-    def liker_mapper(status_update: dict):
-        user = status_update["username"]
-        for liker in status_update["liked_by"]:
-            yield (user, liker)
-    
+        
     distinct_likers_per_user = map_reduce(status_updates, liker_mapper, count_distinct_reducer)
-    
     print(distinct_likers_per_user)
     
-    # 4. Matrix manipulation
-    from typing import NamedTuple
     
-    class Entry(NamedTuple):
-        name: str
-        i: int
-        j: int
-        value: float
-    
-    def matrix_multiply_mapper(num_rows_a: int, num_cols_b: int) -> Mapper:
-        """ C[x][y] = A[x][0] * B[0][y] + A[x][1] * B[1][y] + ... A[x][m] * B[m][y]
-            So, an element A[i][j] goes into every C[i][y] with coef B[j][y]
-            and an element B[i][j] goes into every C[x][j] with coef A[x][i]"""
-        
-        def mapper(entry: Entry):
-            if entry.name == "A":
-                for y in range(num_cols_b):
-                    key = (entry.i, y)              # which element of C
-                    value = (entry.j, entry.value)  # which entry in the sum
-                    yield (key, value)
-            else:
-                for x in range(num_rows_a):
-                    key = (x, entry.j)              # which element of C
-                    value = (entry.i, entry.value)  # which entry in the sum
-                    yield (key, value)
-     
-    def matrix_multiply_reducer(key: Tuple[int, int],
-                                indexed_values: Iterable[Tuple[int, int]]):
-        results_by_index = defaultdict(list)
-        
-        for index, value in indexed_values:
-            result_by_index[index].append(value)
-        
-        # multiply the values for positions with two values
-        # (one from A, and one from B) and sum them up
-        
-        sumproduct = sum(value[0] * value[1]
-                         for values in result_by_index.values()
-                         if len(values) == 2)
-        
-        if sumproduct != 0.0:
-            yield (key, sumproduct)
-            
-    """ A = [[3, 2, 0],
-           [0, 0, 0]]
-       
-        B = [[4, -1, 0],
-             [10, 0, 0],
-             [0, 0, 0]] """
-
-    entries = [Entry("A", 0, 0, 3), Entry("A", 0, 1, 2), Entry("B",0, 0, 4),
-               Entry("B", 0, 1, -1), Entry("B", 1, 0, 10)]
+    entries = [Entry("A", 0, 0, 3), Entry("A", 0, 1, 2), Entry("B",0, 0, 4), Entry("B", 0, 1, -1), Entry("B", 1, 0, 10)]
 
     mapper = matrix_multiply_mapper(num_rows_a = 2, num_cols_b = 3)
 
